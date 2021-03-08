@@ -34,7 +34,7 @@ private val DarkColorPalette = darkColors(
 fun MyTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colors = DarkColorPalette,
-        typography = typography,
+        typography = Typography,
         shapes = shapes,
         content = content
     )

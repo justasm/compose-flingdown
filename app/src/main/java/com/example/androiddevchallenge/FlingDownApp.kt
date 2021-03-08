@@ -68,7 +68,15 @@ fun FlingDownApp() {
     val explodeVelocityMagnitude = 1920.dp
     val explodeVelocityMagnitudePx = with(density) { explodeVelocityMagnitude.toPx() }
 
-    val flingables = remember { List(10) { Flingable(radiusPx = flingableRadiusPx) } }
+    val colors = MaterialTheme.colors
+    val flingables = remember {
+        List(10) {
+            Flingable(
+                radiusPx = flingableRadiusPx,
+                color = if (it % 2 == 0) colors.secondary else colors.secondaryVariant,
+            )
+        }
+    }
     val scope = rememberCoroutineScope()
     var count by remember { mutableStateOf(0) }
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -152,8 +160,7 @@ fun FlingDownApp() {
         contentAlignment = Alignment.Center
     ) {
         Surface(
-            color = Color.Black,
-            contentColor = Color.White,
+            color = MaterialTheme.colors.primary,
             shape = CircleShape,
         ) {
             Box(
@@ -164,7 +171,6 @@ fun FlingDownApp() {
             ) {
                 Text(
                     text = if (count > 0) "$count" else "feed\nme",
-                    color = Color.White,
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.button.copy(fontSize = 32.sp),
                 )

@@ -52,7 +52,7 @@ suspend fun PointerInputScope.detectDragGestures(
             var change: PointerInputChange
             do {
                 change = awaitDown()
-            } while ((change.position - position.value).getDistance() > radius)
+            } while ((change.position - position.value).getDistance() > radius || !flingable.isActive.value)
             change.consumeDownChange()
             launch { position.stop() }
             change.id

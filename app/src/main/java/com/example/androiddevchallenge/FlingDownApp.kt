@@ -15,6 +15,7 @@
  */
 package com.example.androiddevchallenge
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,39 +48,55 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun FlingDownApp() {
+    val density = LocalDensity.current
     val flingableRadius = 32.dp
-    val flingableRadiusPx = with(LocalDensity.current) { flingableRadius.toPx() }
-    val counterRadius = 64.dp
-    val counterRadiusPx = with(LocalDensity.current) { counterRadius.toPx() }
+    val flingableRadiusPx = with(density) { flingableRadius.toPx() }
     val explodeVelocityMagnitude = 1920.dp
-    val explodeVelocityMagnitudePx = with(LocalDensity.current) { explodeVelocityMagnitude.toPx() }
+    val explodeVelocityMagnitudePx = with(density) { explodeVelocityMagnitude.toPx() }
 
     val flingables = remember { List(10) { Flingable(radiusPx = flingableRadiusPx) } }
     val scope = rememberCoroutineScope()
     var count by remember { mutableStateOf(0) }
-
     var size by remember { mutableStateOf(IntSize.Zero) }
-    val counterPosition by derivedStateOf { Offset(size.width / 2f, size.height / 2f) }
 
-    fun hitTest(position: Offset): Intersection? {
-        val positionDiff = position - counterPosition
-
-        val distance = positionDiff.getDistance()
-
-        val depth = (flingableRadiusPx + counterRadiusPx) - distance
-        if (depth <= 0) {
-            return null
-        }
-
-        val normal = positionDiff / distance
-        return Intersection(normal, depth)
+    fun Flingable.onHit() {
+        ++count
+        isActive.value = false
     }
+
+    val counterPosition by remember { derivedStateOf { size.offset() / 2f } }
+    val counterRadius by animateDpAsState(
+        targetValue = 64.dp + 8.dp * count,
+        finishedListener = { counterRadius ->
+            val counterRadiusPx = with(density) { counterRadius.toPx() }
+            flingables.filter { it.isActive.value }.forEach { flingable ->
+                intersect(
+                    flingable.position.value,
+                    flingable.radiusPx,
+                    counterPosition,
+                    counterRadiusPx,
+                )?.let {
+                    flingable.onHit()
+                }
+            }
+        },
+    )
+    val counterRadiusPx by remember { derivedStateOf { with(density) { counterRadius.toPx() } } }
+
+    fun intersectCounter(position: Offset, radius: Float) =
+        intersect(position, radius, counterPosition, counterRadiusPx)
 
     fun reset() {
         count = 0
         flingables.forEach { flingable ->
             scope.launch {
-                explode(flingable, size, counterPosition, explodeVelocityMagnitudePx, ::hitTest)
+                explode(
+                    flingable,
+                    size,
+                    counterPosition,
+                    explodeVelocityMagnitudePx,
+                    ::intersectCounter
+                )
             }
         }
         flingables.forEach { it.isActive.value = true }
@@ -93,12 +110,12 @@ fun FlingDownApp() {
                 coroutineScope {
                     flingables.forEach { flingable ->
                         launch {
-                            detectDragGestures(flingable, size, hitTest = { position ->
-                                hitTest(position)?.also {
-                                    ++count
-                                    flingable.isActive.value = false
+                            detectDragGestures(
+                                flingable, size,
+                                intersect = { position, radius ->
+                                    intersectCounter(position, radius)?.also { flingable.onHit() }
                                 }
-                            })
+                            )
                         }
                     }
                 }
@@ -132,3 +149,5 @@ fun FlingDownApp() {
 private fun DrawScope.draw(flingable: Flingable) = with(flingable) {
     drawCircle(color, radiusPx, position.value)
 }
+
+private fun IntSize.offset(): Offset = Offset(width.toFloat(), height.toFloat())

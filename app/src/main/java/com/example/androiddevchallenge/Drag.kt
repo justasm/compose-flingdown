@@ -43,7 +43,7 @@ import kotlinx.coroutines.launch
 suspend fun PointerInputScope.detectDragGestures(
     flingable: Flingable,
     size: IntSize,
-    hitTest: (Offset) -> Intersection?,
+    intersect: (Offset, Float) -> Intersection?,
 ) = coroutineScope {
     val radius = flingable.radiusPx
     val position = flingable.position
@@ -72,7 +72,7 @@ suspend fun PointerInputScope.detectDragGestures(
         var endDueToHit = false
         fun Animatable<Offset, AnimationVector2D>.onEachFrame() {
             if (endDueToHit) return
-            val intersection = hitTest(value) ?: return
+            val intersection = intersect(value, radius) ?: return
             endDueToHit = true
             val (normal, depth) = intersection
             val targetValue = value + normal * depth + normal * EPSILON

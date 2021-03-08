@@ -30,7 +30,7 @@ suspend fun explode(
     size: IntSize,
     center: Offset,
     velocityMagnitudePx: Float,
-    hitTest: (Offset) -> Intersection?,
+    intersect: (Offset, Float) -> Intersection?,
 ) {
     val initialDirection =
         (flingable.position.value - center).normalize().rotate(randomRadians())
@@ -41,7 +41,7 @@ suspend fun explode(
         coroutineScope {
             fun Animatable<Offset, AnimationVector2D>.onEachFrame() {
                 if (endDueToHit) return
-                val intersection = hitTest(value) ?: return
+                val intersection = intersect(value, flingable.radiusPx) ?: return
                 endDueToHit = true
                 val (normal, depth) = intersection
                 initialVelocity = velocity.reflect(normal)

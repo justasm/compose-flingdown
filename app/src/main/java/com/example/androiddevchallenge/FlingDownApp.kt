@@ -55,6 +55,9 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -125,7 +128,10 @@ fun FlingDownApp() {
     Box(
         Modifier
             .fillMaxSize()
-            .onSizeChanged { size = it }
+            .onSizeChanged {
+                size = it
+                scope.launch { flingables.initializePositions(counterPosition, counterRadiusPx) }
+            }
             .pointerInput(Unit) {
                 coroutineScope {
                     flingables.forEach { flingable ->
@@ -185,3 +191,17 @@ private fun DrawScope.draw(flingable: Flingable) = with(flingable) {
 }
 
 private fun IntSize.offset(): Offset = Offset(width.toFloat(), height.toFloat())
+
+private suspend fun List<Flingable>.initializePositions(
+    center: Offset,
+    counterRadius: Float,
+) = coroutineScope {
+    forEachIndexed { index, flingable ->
+        val radians = 2 * PI.toFloat() * index / size.toFloat()
+        val direction = Offset(cos(radians), sin(radians))
+        val radius = (counterRadius + 2 * flingable.radiusPx)
+        launch {
+            flingable.position.snapTo(center + direction * radius)
+        }
+    }
+}

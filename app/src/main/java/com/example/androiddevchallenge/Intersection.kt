@@ -15,4 +15,25 @@
  */
 package com.example.androiddevchallenge
 
+import androidx.compose.ui.geometry.Offset
+
 data class Intersection(val normal: Vector2D, val depth: Float)
+
+fun intersect(
+    position: Offset,
+    radius: Float,
+    otherPosition: Offset,
+    otherRadius: Float,
+): Intersection? {
+    val positionDiff = position - otherPosition
+
+    val distance = positionDiff.getDistance()
+
+    val depth = (radius + otherRadius) - distance
+    if (depth <= 0) {
+        return null
+    }
+
+    val normal = positionDiff / distance
+    return Intersection(normal, depth)
+}

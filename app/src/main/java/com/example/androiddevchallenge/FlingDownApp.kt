@@ -17,12 +17,15 @@ package com.example.androiddevchallenge
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -49,6 +52,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -159,8 +163,13 @@ fun FlingDownApp() {
             },
         contentAlignment = Alignment.Center
     ) {
+        val counterColor = MaterialTheme.colors.primary
+        val mouthColor by animateColorAsState(if (countingDown) MaterialTheme.colors.primary else MaterialTheme.colors.primaryVariant)
+
+        Eyes(counterRadius, counterColor)
+
         Surface(
-            color = MaterialTheme.colors.primary,
+            color = counterColor,
             shape = CircleShape,
         ) {
             Box(
@@ -169,10 +178,11 @@ fun FlingDownApp() {
                     .clickable { countDown() },
                 contentAlignment = Alignment.Center,
             ) {
+                Mouth(counterRadius, mouthColor)
                 Text(
                     text = if (count > 0) "$count" else "feed\nme",
                     textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.button.copy(fontSize = 32.sp),
+                    style = MaterialTheme.typography.button.copy(fontSize = if (count > 0) 64.sp else 32.sp),
                 )
                 AnimatedVisibility(
                     visible = count > 0 && !countingDown,
@@ -183,13 +193,64 @@ fun FlingDownApp() {
                         Icons.Default.PlayArrow,
                         contentDescription = "Start",
                         modifier = Modifier
-                            .padding(top = 80.dp)
-                            .size(48.dp),
+                            .padding(top = 100.dp)
+                            .size(32.dp),
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun Mouth(radius: Dp, color: Color) {
+    Box(
+        Modifier
+            .size(radius * 2 - 16.dp)
+            .background(color, CircleShape)
+    )
+}
+
+@Composable
+private fun Eyes(radius: Dp, color: Color) {
+    val size = 64.dp
+    val strokeWidth = 8.dp
+    Box(
+        Modifier
+            .size(size)
+            .offset(-radius * 3f / 4, -radius * 3f / 4)
+            .background(color, CircleShape)
+    )
+    Box(
+        Modifier
+            .size(size - strokeWidth * 2)
+            .offset(-radius * 3f / 4, -radius * 3f / 4)
+            .background(Color.White, CircleShape)
+    )
+    Box(
+        Modifier
+            .size(size - strokeWidth * 4)
+            .offset(-radius * 3f / 4, -radius * 3f / 4)
+            .background(Color.Black, CircleShape)
+    )
+    Box(
+        Modifier
+            .size(size)
+            .offset(radius * 3f / 4, -radius * 3f / 4)
+            .background(color, CircleShape)
+    )
+    Box(
+        Modifier
+            .size(size - strokeWidth * 2)
+            .offset(radius * 3f / 4, -radius * 3f / 4)
+            .background(Color.White, CircleShape)
+    )
+    Box(
+        Modifier
+            .size(size - strokeWidth * 4)
+            .offset(radius * 3f / 4, -radius * 3f / 4)
+            .background(Color.Black, CircleShape)
+    )
 }
 
 private fun DrawScope.draw(flingable: Flingable) = with(flingable) {

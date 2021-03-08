@@ -15,15 +15,23 @@
  */
 package com.example.androiddevchallenge
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -40,12 +48,15 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun FlingDownApp() {
     val density = LocalDensity.current
@@ -82,24 +93,33 @@ fun FlingDownApp() {
         },
     )
     val counterRadiusPx by remember { derivedStateOf { with(density) { counterRadius.toPx() } } }
+    var countingDown by remember { mutableStateOf(false) }
 
     fun intersectCounter(position: Offset, radius: Float) =
         intersect(position, radius, counterPosition, counterRadiusPx)
 
-    fun reset() {
-        count = 0
-        flingables.forEach { flingable ->
-            scope.launch {
-                explode(
-                    flingable,
-                    size,
-                    counterPosition,
-                    explodeVelocityMagnitudePx,
-                    ::intersectCounter
-                )
+    fun countDown() {
+        if (countingDown) return
+        countingDown = true
+        scope.launch {
+            while (count > 0) {
+                delay(1000)
+                --count
             }
+            flingables.forEach { flingable ->
+                launch {
+                    explode(
+                        flingable,
+                        size,
+                        counterPosition,
+                        explodeVelocityMagnitudePx,
+                        ::intersectCounter
+                    )
+                }
+            }
+            flingables.forEach { it.isActive.value = true }
+            countingDown = false
         }
-        flingables.forEach { it.isActive.value = true }
     }
 
     Box(
@@ -133,14 +153,28 @@ fun FlingDownApp() {
             Box(
                 modifier = Modifier
                     .size(counterRadius * 2)
-                    .clickable { reset() },
-                contentAlignment = Alignment.Center
+                    .clickable { countDown() },
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "$count",
+                    text = if (count > 0) "$count" else "feed\nme",
                     color = Color.White,
+                    textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.button.copy(fontSize = 32.sp),
                 )
+                AnimatedVisibility(
+                    visible = count > 0 && !countingDown,
+                    enter = fadeIn(initialAlpha = 1f),
+                    exit = fadeOut(),
+                ) {
+                    Icon(
+                        Icons.Default.PlayArrow,
+                        contentDescription = "Start",
+                        modifier = Modifier
+                            .padding(top = 80.dp)
+                            .size(48.dp),
+                    )
+                }
             }
         }
     }

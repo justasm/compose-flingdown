@@ -18,7 +18,9 @@ package com.example.androiddevchallenge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -93,6 +95,10 @@ fun FlingDownApp() {
     val counterPosition by remember { derivedStateOf { size.offset() / 2f } }
     val counterRadius by animateDpAsState(
         targetValue = 64.dp + 8.dp * count,
+        animationSpec = spring(
+            dampingRatio = 0.4f,
+            visibilityThreshold = Dp.VisibilityThreshold,
+        ),
         finishedListener = { counterRadius ->
             val counterRadiusPx = with(density) { counterRadius.toPx() }
             flingables.filter { it.isActive.value }.forEach { flingable ->

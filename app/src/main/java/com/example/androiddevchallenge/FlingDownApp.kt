@@ -199,7 +199,7 @@ fun FlingDownApp() {
                         Icons.Default.PlayArrow,
                         contentDescription = "Start",
                         modifier = Modifier
-                            .padding(top = 100.dp)
+                            .padding(top = 92.dp)
                             .size(32.dp),
                     )
                 }

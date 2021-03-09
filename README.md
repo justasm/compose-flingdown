@@ -32,9 +32,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
+The bundled [Changa One][changa-one] font is licensed under the [Open Font License][open-font-license].
+
 [gestures]: app/src/main/java/com/example/androiddevchallenge/Drag.kt#L94
 [anim-high-level]: app/src/main/java/com/example/androiddevchallenge/FlingDownApp.kt#L201
 [anim-as-state]: app/src/main/java/com/example/androiddevchallenge/FlingDownApp.kt#L104
 [anim-animatable]: app/src/main/java/com/example/androiddevchallenge/BounceAround.kt#L42
 [anim-infinite]: app/src/main/java/com/example/androiddevchallenge/FlingDownApp.kt#L234
 [font]: app/src/main/java/com/example/androiddevchallenge/ui/theme/Type.kt#L24
+[changa-one]: https://fonts.google.com/specimen/Changa+One
+[open-font-license]: https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL

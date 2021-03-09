@@ -18,8 +18,15 @@ package com.example.androiddevchallenge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateValue
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -47,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -221,6 +229,22 @@ private fun Mouth(radius: Dp, color: Color) {
 private fun Eyes(radius: Dp, color: Color) {
     val size = 64.dp
     val strokeWidth = 8.dp
+    val pupilSize = size - strokeWidth * 4
+
+    val infiniteTransition = rememberInfiniteTransition()
+    val pupilWidth by infiniteTransition.animateValue(
+        initialValue = pupilSize,
+        targetValue = 0.dp,
+        typeConverter = Dp.VectorConverter,
+        animationSpec = infiniteRepeatable(
+            animation = keyframes {
+                durationMillis = 2500
+                pupilSize at 2400 with FastOutLinearInEasing
+            },
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
     Box(
         Modifier
             .size(size)
@@ -235,8 +259,9 @@ private fun Eyes(radius: Dp, color: Color) {
     )
     Box(
         Modifier
-            .size(size - strokeWidth * 4)
+            .size(width = pupilWidth, height = pupilSize)
             .offset(-radius * 3f / 4, -radius * 3f / 4)
+            .rotate(-45f)
             .background(Color.Black, CircleShape)
     )
     Box(
@@ -253,8 +278,9 @@ private fun Eyes(radius: Dp, color: Color) {
     )
     Box(
         Modifier
-            .size(size - strokeWidth * 4)
+            .size(width = pupilWidth, height = pupilSize)
             .offset(radius * 3f / 4, -radius * 3f / 4)
+            .rotate(45f)
             .background(Color.Black, CircleShape)
     )
 }
